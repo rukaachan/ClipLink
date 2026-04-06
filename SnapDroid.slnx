@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/SnapDroid.Worker/SnapDroid.Worker.csproj" />
+    <Project Path="src/SnapDroid.Cli/SnapDroid.Cli.csproj" />
+    <Project Path="src/SnapDroid.Core/SnapDroid.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/SnapDroid.Tests/SnapDroid.Tests.csproj" />
+  </Folder>
+</Solution>
