@@ -27,6 +27,17 @@ function Remove-UserPathEntry([string]$PathEntry) {
     return $true
 }
 
+function Remove-StartupRunEntry([string]$AppName) {
+    $runKeyPath = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Run"
+    $existingValue = Get-ItemPropertyValue -Path $runKeyPath -Name $AppName -ErrorAction SilentlyContinue
+    if ($null -eq $existingValue) {
+        return $false
+    }
+
+    Remove-ItemProperty -Path $runKeyPath -Name $AppName -ErrorAction SilentlyContinue
+    return $true
+}
+
 $cliPath = Join-Path $InstallDir "cliplink.exe"
 
 if (Test-Path $cliPath) {
@@ -36,6 +47,7 @@ else {
     Get-Process -Name "ClipLink.Worker" -ErrorAction SilentlyContinue | Stop-Process -Force
 }
 
+$startupRemoved = Remove-StartupRunEntry "ClipLink"
 $pathRemoved = Remove-UserPathEntry $InstallDir
 
 if (Test-Path $InstallDir) {
@@ -59,4 +71,18 @@ if ($RemoveData) {
 }
 else {
     Write-Host "Kept your config and logs in %LOCALAPPDATA%\ClipLink."
+}
+if ($startupRemoved) {
+    Write-Host "Removed ClipLink startup entry from HKCU Run."
+}
+else {
+    Write-Host "No ClipLink startup entry found in HKCU Run."
+}
+
+$stillOnPath = (Get-Command cliplink -ErrorAction SilentlyContinue) -ne $null
+if ($stillOnPath) {
+    Write-Host "Warning: 'cliplink' is still resolvable in this shell/session. Open a new terminal to refresh PATH."
+}
+else {
+    Write-Host "Verified: 'cliplink' is not resolvable from PATH in this shell/session."
 }

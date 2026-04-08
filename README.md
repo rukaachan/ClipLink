@@ -42,7 +42,7 @@ cliplink status
 cliplink restart
 ```
 
-## Install
+## Install / Uninstall (clear behavior)
 
 Install globally:
 
@@ -50,18 +50,47 @@ Install globally:
 .\scripts\Install-ClipLink.bat
 ```
 
-Uninstall:
+What install does:
+- Publishes `cliplink.exe` and `ClipLink.Worker.exe` to `%LOCALAPPDATA%\Programs\ClipLink`
+- Adds that install folder to your **user PATH**
+- Stops previous worker if running, then starts the new worker
+
+Uninstall (keep your data):
 
 ```powershell
 .\scripts\Uninstall-ClipLink.bat
 ```
 
-Remove config and logs too:
+What this uninstall removes automatically:
+- `%LOCALAPPDATA%\Programs\ClipLink` (installed binaries)
+- ClipLink folder entry from your **user PATH**
+- `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\ClipLink` startup entry
+- Running ClipLink worker process
+
+What this uninstall keeps:
+- `%LOCALAPPDATA%\ClipLink\config.json`
+- `%LOCALAPPDATA%\ClipLink\logs\`
+- Images under your configured image directory (default `%USERPROFILE%\Pictures\ClipLink`)
+
+Full uninstall (remove app + config + logs):
 
 ```powershell
 powershell -File .\scripts\Uninstall-ClipLink.ps1 -RemoveData
 ```
 
+Use this only if you want a clean reset. It also deletes `%LOCALAPPDATA%\ClipLink`.
+
+Post-checks done by uninstall script:
+- Prints whether HKCU Run startup entry was removed
+- Prints whether `cliplink` is still resolvable in the current shell
+
+Optional manual verify:
+
+```powershell
+where cliplink
+```
+
+`where cliplink` can still show old path in the same terminal session due to PATH caching; open a new terminal to confirm final state.
 ## Default paths
 
 - Images: `%USERPROFILE%\Pictures\ClipLink`
