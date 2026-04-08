@@ -1,0 +1,10 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/ClipLink.Worker/ClipLink.Worker.csproj" />
+    <Project Path="src/ClipLink.Cli/ClipLink.Cli.csproj" />
+    <Project Path="src/ClipLink.Core/ClipLink.Core.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/ClipLink.Tests/ClipLink.Tests.csproj" />
+  </Folder>
+</Solution>

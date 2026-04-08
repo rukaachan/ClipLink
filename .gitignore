@@ -37,3 +37,10 @@ Desktop.ini
 # Local runtime config
 appsettings.Development.json
 local.settings.json
+
+
+# ClipLink local runtime files (if app paths are pointed to repo root)
+/config.json
+/bridge.log
+/logs/
+/images/

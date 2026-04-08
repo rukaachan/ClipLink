@@ -1,8 +1,0 @@
-{
-  "ImageRootDirectory": "%USERPROFILE%\\Pictures\\SnapDroid",
-  "PromptTemplate": "analyze this image: {path}",
-  "RetentionHours": 1,
-  "PasteHotkey": "Alt+V",
-  "CopyHotkey": "Ctrl+Alt+V",
-  "AutoStartOnLogin": true
-}

@@ -1,0 +1,8 @@
+{
+  "ImageRootDirectory": "%USERPROFILE%\\Pictures\\ClipLink",
+  "PromptTemplate": " : {path}",
+  "RetentionHours": 1,
+  "PasteHotkey": "Alt+V",
+  "CopyHotkey": "Ctrl+Alt+V",
+  "AutoStartOnLogin": true
+}

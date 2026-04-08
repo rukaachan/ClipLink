@@ -1,61 +1,72 @@
-# SnapDroid
+# ClipLink
 
 ## Overview
 
-SnapDroid is a small Windows CLI for Factory Droid.
+ClipLink is a Windows clipboard bridge for cross-app image prompt workflows.
 
-It saves clipboard images and copies a prompt like:
+When you copy an image to clipboard, ClipLink saves it and copies a text prompt in this format:
 
 ```text
-analyze this image: C:\Users\<user>\Pictures\SnapDroid\img-xxxx.png
+ : C:\Users\<user>\Pictures\ClipLink\img-xxxx.png
 ```
 
 ## Quick use
 
-1. Start SnapDroid with `snapdroid start`
+1. Start ClipLink with `cliplink start`
 2. Take a screenshot or copy an image
-3. Focus Droid in your terminal
-4. Press `Alt+V`
-5. Paste manually in your terminal with your usual paste shortcut
+3. Trigger the ClipLink hotkey
+4. Paste in your target app with your normal paste shortcut
 
-`Alt+V` and `Ctrl+Alt+V` both use the reliable copy-to-clipboard flow.
+ClipLink is currently configured for copy-only flow (no auto-paste injection).
+
+## Hotkeys
+
+Configured defaults:
+- Paste/action hotkey: `Alt+V`
+- Copy hotkey: `Ctrl+Alt+V`
+
+If a configured hotkey is already taken by another app, ClipLink automatically falls back at runtime.
+
+Fallback order:
+- Paste/action: `Alt+V` -> `Alt+Shift+V` -> `Alt+F10`
+- Copy: `Ctrl+Alt+V` -> `Ctrl+Shift+F10` -> `Ctrl+Alt+F10`
+
+You can check active hotkeys in `%LOCALAPPDATA%\ClipLink\logs\bridge.log`.
 
 ## CLI commands
 
 ```powershell
-snapdroid start
-snapdroid stop
-snapdroid status
-snapdroid restart
+cliplink start
+cliplink stop
+cliplink status
+cliplink restart
 ```
-
-The CLI runs the background worker that watches hotkeys and prepares clipboard content.
 
 ## Install
 
 Install globally:
 
 ```powershell
-.\scripts\Install-SnapDroid.bat
+.\scripts\Install-ClipLink.bat
 ```
 
 Uninstall:
 
 ```powershell
-.\scripts\Uninstall-SnapDroid.bat
+.\scripts\Uninstall-ClipLink.bat
 ```
 
 Remove config and logs too:
 
 ```powershell
-powershell -File .\scripts\Uninstall-SnapDroid.ps1 -RemoveData
+powershell -File .\scripts\Uninstall-ClipLink.ps1 -RemoveData
 ```
 
 ## Default paths
 
-- Images: `%USERPROFILE%\Pictures\SnapDroid`
-- Config: `%LOCALAPPDATA%\SnapDroid\config.json`
-- Logs: `%LOCALAPPDATA%\SnapDroid\logs\bridge.log`
+- Images: `%USERPROFILE%\Pictures\ClipLink`
+- Config: `%LOCALAPPDATA%\ClipLink\config.json`
+- Logs: `%LOCALAPPDATA%\ClipLink\logs\bridge.log`
 
 ## Config
 
@@ -63,8 +74,8 @@ Example:
 
 ```json
 {
-  "ImageRootDirectory": "%USERPROFILE%\\Pictures\\SnapDroid",
-  "PromptTemplate": "analyze this image: {path}",
+  "ImageRootDirectory": "%USERPROFILE%\\Pictures\\ClipLink",
+  "PromptTemplate": " : {path}",
   "RetentionHours": 1,
   "PasteHotkey": "Alt+V",
   "CopyHotkey": "Ctrl+Alt+V",
@@ -72,30 +83,30 @@ Example:
 }
 ```
 
-Sample file: `config/SnapDroid.config.example.json`
+Sample file: `config/ClipLink.config.example.json`
 
 ## Commands
 
 ```powershell
-dotnet build .\SnapDroid.slnx
-dotnet test .\tests\SnapDroid.Tests\SnapDroid.Tests.csproj
-dotnet run --project .\src\SnapDroid.Cli\SnapDroid.Cli.csproj -- status
-dotnet run --project .\src\SnapDroid.Cli\SnapDroid.Cli.csproj -- start
-dotnet run --project .\src\SnapDroid.Cli\SnapDroid.Cli.csproj -- stop
+dotnet build .\ClipLink.slnx
+dotnet test .\tests\ClipLink.Tests\ClipLink.Tests.csproj
+dotnet run --project .\src\ClipLink.Cli\ClipLink.Cli.csproj -- status
+dotnet run --project .\src\ClipLink.Cli\ClipLink.Cli.csproj -- start
+dotnet run --project .\src\ClipLink.Cli\ClipLink.Cli.csproj -- stop
 ```
 
 Publish:
 
 ```powershell
-dotnet publish .\src\SnapDroid.Worker\SnapDroid.Worker.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true -o .\dist\SnapDroid
-dotnet publish .\src\SnapDroid.Cli\SnapDroid.Cli.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true -o .\dist\SnapDroid
+dotnet publish .\src\ClipLink.Worker\ClipLink.Worker.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true -o .\dist\ClipLink
+dotnet publish .\src\ClipLink.Cli\ClipLink.Cli.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true -o .\dist\ClipLink
 ```
 
 ## Repository layout
 
-- `src/SnapDroid.Cli` - CLI entry point
-- `src/SnapDroid.Worker` - background worker used by the CLI for image capture and clipboard copy
-- `src/SnapDroid.Core` - shared logic
-- `scripts/` - install and uninstall helpers
+- `src/ClipLink.Cli` - CLI entry point
+- `src/ClipLink.Worker` - background worker for clipboard image capture and prompt copy
+- `src/ClipLink.Core` - shared logic
+- `scripts/` - install/uninstall helpers
 - `config/` - sample config
 - `tests/` - xUnit tests
