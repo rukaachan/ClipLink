@@ -1,39 +1,34 @@
 # ClipLink
 
-## Overview
+Windows clipboard bridge for image-to-prompt workflows.
 
-ClipLink is a Windows clipboard bridge for cross-app image prompt workflows.
-
-When you copy an image to clipboard, ClipLink saves it and copies a text prompt in this format:
+Copy/screenshot an image → press hotkey → ClipLink saves image → pastes prompt with saved path:
 
 ```text
- : C:\Users\<user>\Pictures\ClipLink\img-xxxx.png
+ : C:/Users/<user>\Pictures\ClipLink\img-xxxx.png
 ```
 
-## Quick use
+## Requirements
 
-1. Start ClipLink with `cliplink start`
-2. Take a screenshot or copy an image
-3. Trigger the ClipLink hotkey
-4. Paste in your target app with your normal paste shortcut
+- Windows
+- Python 3.11+
+- `uv` for dev/build install script
 
-ClipLink is currently configured for copy-only flow (no auto-paste injection).
+## Install
 
-## Hotkeys
+```powershell
+python scripts\install_cliplink.py
+```
 
-Configured defaults:
-- Paste/action hotkey: `Alt+V`
-- Copy hotkey: `Ctrl+Alt+V`
+Installs `cliplink.exe` to:
 
-If a configured hotkey is already taken by another app, ClipLink automatically falls back at runtime.
+```text
+%LOCALAPPDATA%\Programs\ClipLink
+```
 
-Fallback order:
-- Paste/action: `Alt+V` -> `Alt+Shift+V` -> `Alt+F10`
-- Copy: `Ctrl+Alt+V` -> `Ctrl+Shift+F10` -> `Ctrl+Alt+F10`
+Adds install dir to user `PATH`, then restarts worker.
 
-You can check active hotkeys in `%LOCALAPPDATA%\ClipLink\logs\bridge.log`.
-
-## CLI commands
+## CLI
 
 ```powershell
 cliplink start
@@ -42,100 +37,131 @@ cliplink status
 cliplink restart
 ```
 
-## Install / Uninstall (clear behavior)
+## Use
 
-Install globally:
+1. Start worker: `cliplink start`
+2. Copy image / take screenshot
+3. Press ClipLink hotkey
+4. Prompt is pasted into active app
 
-```powershell
-.\scripts\Install-ClipLink.bat
-```
+## Hotkeys
 
-What install does:
-- Publishes `cliplink.exe` and `ClipLink.Worker.exe` to `%LOCALAPPDATA%\Programs\ClipLink`
-- Adds that install folder to your **user PATH**
-- Stops previous worker if running, then starts the new worker
+Defaults:
 
-Uninstall (keep your data):
+| Action | Hotkey |
+|---|---|
+| Paste/action | `Alt+V` |
+| Copy/action | `Ctrl+Alt+V` |
 
-```powershell
-.\scripts\Uninstall-ClipLink.bat
-```
+Both actions currently save clipboard image, generate prompt, paste prompt into active window, then restore clipboard if enabled.
 
-What this uninstall removes automatically:
-- `%LOCALAPPDATA%\Programs\ClipLink` (installed binaries)
-- ClipLink folder entry from your **user PATH**
-- `HKCU\Software\Microsoft\Windows\CurrentVersion\Run\ClipLink` startup entry
-- Running ClipLink worker process
+Fallbacks if configured/default hotkey is unavailable:
 
-What this uninstall keeps:
-- `%LOCALAPPDATA%\ClipLink\config.json`
-- `%LOCALAPPDATA%\ClipLink\logs\`
-- Images under your configured image directory (default `%USERPROFILE%\Pictures\ClipLink`)
+| Action | Fallback order |
+|---|---|
+| Paste/action | `Alt+V` → `Alt+Shift+V` → `Alt+F10` |
+| Copy/action | `Ctrl+Alt+V` → `Ctrl+Shift+F10` → `Ctrl+Alt+F10` |
 
-Full uninstall (remove app + config + logs):
+Supported hotkey modifiers: `Ctrl`/`Control`, `Alt`, `Shift`, `Win`.
 
-```powershell
-powershell -File .\scripts\Uninstall-ClipLink.ps1 -RemoveData
-```
-
-Use this only if you want a clean reset. It also deletes `%LOCALAPPDATA%\ClipLink`.
-
-Post-checks done by uninstall script:
-- Prints whether HKCU Run startup entry was removed
-- Prints whether `cliplink` is still resolvable in the current shell
-
-Optional manual verify:
-
-```powershell
-where cliplink
-```
-
-`where cliplink` can still show old path in the same terminal session due to PATH caching; open a new terminal to confirm final state.
-## Default paths
-
-- Images: `%USERPROFILE%\Pictures\ClipLink`
-- Config: `%LOCALAPPDATA%\ClipLink\config.json`
-- Logs: `%LOCALAPPDATA%\ClipLink\logs\bridge.log`
+Supported keys: `A-Z`, `0-9`, `F1-F12`, `Insert`, `Delete`, `Home`, `End`, `PageUp`, `PageDown`, `Space`, `Esc`/`Escape`.
 
 ## Config
+
+Path:
+
+```text
+%LOCALAPPDATA%\ClipLink\config.json
+```
+
+Created on first run.
 
 Example:
 
 ```json
 {
-  "ImageRootDirectory": "%USERPROFILE%\\Pictures\\ClipLink",
-  "PromptTemplate": " : {path}",
-  "RetentionHours": 1,
-  "PasteHotkey": "Alt+V",
-  "CopyHotkey": "Ctrl+Alt+V",
-  "AutoStartOnLogin": true
+  "image_root_directory": "%USERPROFILE%\Pictures\ClipLink",
+  "prompt_template": " : {path}",
+  "retention_hours": 1,
+  "paste_hotkey": "Alt+V",
+  "copy_hotkey": "Ctrl+Alt+V",
+  "auto_start_on_login": true,
+  "paste_sequence": "Ctrl+Shift+V",
+  "restore_clipboard_after_paste": true,
+  "restore_delay_ms": 250,
+  "process_overrides": {
+    "notepad": {
+      "paste_sequence": "Ctrl+V",
+      "restore_delay_ms": 500
+    }
+  }
 }
 ```
 
-Sample file: `config/ClipLink.config.example.json`
+Notes:
 
-## Commands
+- `prompt_template` must contain `{path}`.
+- `retention_hours` must be greater than `0`.
+- Supported `paste_sequence`: `Ctrl+Shift+V`, `Ctrl+V`, `Shift+Insert`.
+- `process_overrides` keys are process names without `.exe`, lowercased internally.
+
+## Paths
+
+| Item | Path |
+|---|---|
+| Images | `%USERPROFILE%\Pictures\ClipLink` |
+| Config | `%LOCALAPPDATA%\ClipLink\config.json` |
+| Logs | `%LOCALAPPDATA%\ClipLink\logs\bridge.log` |
+| Worker PID | `%LOCALAPPDATA%\ClipLink\worker.pid` |
+| Install | `%LOCALAPPDATA%\Programs\ClipLink\cliplink.exe` |
+
+## Uninstall
 
 ```powershell
-dotnet build .\ClipLink.slnx
-dotnet test .\tests\ClipLink.Tests\ClipLink.Tests.csproj
-dotnet run --project .\src\ClipLink.Cli\ClipLink.Cli.csproj -- status
-dotnet run --project .\src\ClipLink.Cli\ClipLink.Cli.csproj -- start
-dotnet run --project .\src\ClipLink.Cli\ClipLink.Cli.csproj -- stop
+python scripts\uninstall_cliplink.py
 ```
 
-Publish:
+Remove app data too:
 
 ```powershell
-dotnet publish .\src\ClipLink.Worker\ClipLink.Worker.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true -o .\dist\ClipLink
-dotnet publish .\src\ClipLink.Cli\ClipLink.Cli.csproj -c Release -r win-x64 --self-contained true /p:PublishSingleFile=true -o .\dist\ClipLink
+python scripts\uninstall_cliplink.py --remove-data
 ```
 
-## Repository layout
+Uninstall stops worker, removes startup entry, removes install dir from user `PATH`, deletes install dir.
 
-- `src/ClipLink.Cli` - CLI entry point
-- `src/ClipLink.Worker` - background worker for clipboard image capture and prompt copy
-- `src/ClipLink.Core` - shared logic
-- `scripts/` - install/uninstall helpers
-- `config/` - sample config
-- `tests/` - xUnit tests
+## Development
+
+```powershell
+uv sync
+pytest tests -q
+python -m cliplink.cli status
+python -m cliplink.cli start
+python -m cliplink.cli stop
+```
+
+Build executable:
+
+```powershell
+uv run pyinstaller --onefile --name cliplink --distpath dist\ClipLink --workpath build --specpath build cliplink_launcher.py
+```
+
+## Project layout
+
+```text
+src/cliplink/          package
+scripts/               install/uninstall helpers
+tests/                 pytest suite
+cliplink_launcher.py   PyInstaller launcher
+```
+
+## Troubleshooting
+
+Worker failed to start → check:
+
+```text
+%LOCALAPPDATA%\ClipLink\logs\bridge.log
+```
+
+Hotkey not working → likely registered by another app. ClipLink tries fallback hotkeys automatically.
+
+Prompt not pasted correctly → set per-process `paste_sequence` override, commonly `Ctrl+V` for simple editors.
